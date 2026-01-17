@@ -23,13 +23,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Setup Gradle Wrapper
-        run: |
-          chmod +x scripts/setup.sh
-          ./scripts/setup.sh
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@45b52564f44a4a311f3e621e74c7c97dd0c5696a # v4
+
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.10
 
       - name: Build
         run: ./gradlew build
@@ -57,13 +55,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Setup Gradle Wrapper
-        run: |
-          chmod +x scripts/setup.sh
-          ./scripts/setup.sh
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@45b52564f44a4a311f3e621e74c7c97dd0c5696a # v4
+
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.10
 
       - name: Run Detekt
         run: ./gradlew detekt
