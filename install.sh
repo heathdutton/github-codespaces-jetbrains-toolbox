@@ -21,6 +21,31 @@ case "$(uname -s)" in
         ;;
 esac
 
+# Check for gh CLI
+if ! command -v gh &> /dev/null; then
+    echo "GitHub CLI (gh) is not installed."
+
+    # Try to install with brew
+    if command -v brew &> /dev/null; then
+        echo "Installing gh via Homebrew..."
+        brew install gh
+    else
+        echo ""
+        echo "Please install GitHub CLI manually:"
+        echo "  https://cli.github.com/"
+        echo ""
+        exit 1
+    fi
+fi
+
+# Check gh auth status
+if ! gh auth status &> /dev/null; then
+    echo "GitHub CLI is not authenticated."
+    echo ""
+    gh auth login
+fi
+
+echo ""
 echo "Installing GitHub Codespaces plugin for JetBrains Toolbox..."
 
 # Get latest release URL
