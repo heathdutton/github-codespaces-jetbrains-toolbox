@@ -1,84 +1,84 @@
 # GitHub Codespaces for JetBrains Toolbox
 
-Connect to your GitHub Codespaces directly from JetBrains Toolbox.
+<p align="center">
+  <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="80" alt="GitHub">
+  &nbsp;&nbsp;&nbsp;
+  <img src="https://resources.jetbrains.com/storage/products/toolbox/img/meta/toolbox_logo_300x300.png" width="80" alt="JetBrains Toolbox">
+</p>
 
-> **Note:** This is a community-maintained plugin. GitHub discontinued their official JetBrains integration in January 2025.
+<p align="center">
+  <strong>Connect to GitHub Codespaces directly from JetBrains Toolbox</strong>
+</p>
 
-## Features
+<p align="center">
+  <em>Community-maintained plugin after GitHub discontinued their official integration (January 2025)</em>
+</p>
 
-- List all your GitHub Codespaces in JetBrains Toolbox
-- Start and stop codespaces directly from the UI
-- Connect to running codespaces with your favorite JetBrains IDE
-- Uses the GitHub CLI (`gh`) for secure authentication
-
-## Requirements
-
-- JetBrains Toolbox App 2.6.0 or later
-- GitHub CLI (`gh`) installed and authenticated
-- JDK 21 (for building)
+---
 
 ## Installation
 
-### From JetBrains Marketplace
+### Prerequisites
 
-*Coming soon*
+1. [JetBrains Toolbox](https://www.jetbrains.com/toolbox-app/) 2.6.0+
+2. [GitHub CLI](https://cli.github.com/) installed and authenticated:
+   ```bash
+   gh auth login
+   ```
 
-### Manual Installation
+### Install from Releases
 
-1. Download the latest release ZIP
-2. Extract to your Toolbox plugins directory:
-   - **macOS:** `~/Library/Caches/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/`
-   - **Linux:** `~/.local/share/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/`
-   - **Windows:** `%LocalAppData%/JetBrains/Toolbox/cache/plugins/com.github.codespaces.toolbox/`
-3. Restart JetBrains Toolbox
+1. **Close JetBrains Toolbox**
+
+2. **Download** the latest `.zip` from [Releases](../../releases)
+
+3. **Extract** to your plugins directory:
+
+   | OS | Path |
+   |----|------|
+   | macOS | `~/Library/Caches/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/` |
+   | Linux | `~/.local/share/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/` |
+   | Windows | `%LocalAppData%\JetBrains\Toolbox\plugins\com.github.codespaces.toolbox\` |
+
+4. **Restart** JetBrains Toolbox
+
+---
+
+## Features
+
+- **Browse** all your GitHub Codespaces
+- **Start/Stop** codespaces with one click
+- **Connect** using any JetBrains IDE
+
+---
 
 ## Building from Source
 
 ```bash
-# Clone the repository
 git clone https://github.com/heathdutton/github-codespaces-jetbrains-toolbox.git
 cd github-codespaces-jetbrains-toolbox
 
-# Run the setup script (downloads Gradle wrapper)
-./scripts/setup.sh
-
-# Build the plugin
-./gradlew buildPlugin
-
-# Or install directly to your Toolbox
-./gradlew installPlugin
+./gradlew installPlugin   # Build and install to Toolbox
 ```
 
-The plugin ZIP will be in `build/distributions/`.
-
-## Setup
-
-1. Install the [GitHub CLI](https://cli.github.com/)
-2. Authenticate with GitHub:
-   ```bash
-   gh auth login
-   ```
-3. Open JetBrains Toolbox and look for "GitHub Codespaces" in the remote development section
+---
 
 ## How It Works
 
-This plugin wraps the GitHub CLI (`gh codespace`) commands to:
-- Discover your codespaces via `gh codespace list`
-- Start/stop codespaces via `gh codespace start/stop`
-- Configure SSH connections via `gh codespace ssh --config`
+The plugin wraps the GitHub CLI to discover, manage, and connect to codespaces. JetBrains Toolbox handles the actual IDE remote connection over SSH.
 
-The actual IDE connection is handled by JetBrains Toolbox's native remote development infrastructure.
+---
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
+Issues and pull requests welcome!
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+[MIT](LICENSE)
 
-## Acknowledgments
+## Credits
 
-- [Coder](https://github.com/coder/coder-jetbrains-toolbox) for their excellent open-source Toolbox plugin that served as a reference implementation
-- JetBrains for the Toolbox plugin API
-- GitHub for the `gh` CLI
+- [Coder Toolbox Plugin](https://github.com/coder/coder-jetbrains-toolbox) - Reference implementation
+- [JetBrains](https://www.jetbrains.com/) - Toolbox API
+- [GitHub](https://github.com/) - Codespaces & CLI
