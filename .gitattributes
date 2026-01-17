@@ -1,0 +1,29 @@
+# Handle line endings automatically for files detected as text
+* text=auto
+
+# Explicitly set line endings for these files
+*.kt text eol=lf
+*.kts text eol=lf
+*.java text eol=lf
+*.xml text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.properties text eol=lf
+*.toml text eol=lf
+
+# Shell scripts must have LF line endings
+*.sh text eol=lf
+gradlew text eol=lf
+
+# Windows batch files must have CRLF line endings
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files
+*.jar binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.ico binary

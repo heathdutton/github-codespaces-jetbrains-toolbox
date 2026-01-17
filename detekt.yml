@@ -1,0 +1,16 @@
+build:
+  maxIssues: 0
+
+style:
+  MaxLineLength:
+    maxLineLength: 150
+  WildcardImport:
+    active: false
+
+complexity:
+  TooManyFunctions:
+    thresholdInClasses: 20
+    thresholdInFiles: 20
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 10
