@@ -1,8 +1,14 @@
 package com.github.codespaces.toolbox
 
 import com.jetbrains.toolbox.api.core.ServiceLocator
+import com.jetbrains.toolbox.api.core.diagnostics.Logger
+import com.jetbrains.toolbox.api.localization.LocalizableStringFactory
 import com.jetbrains.toolbox.api.remoteDev.RemoteDevExtension
 import com.jetbrains.toolbox.api.remoteDev.RemoteProvider
+import com.jetbrains.toolbox.api.remoteDev.states.EnvironmentStateColorPalette
+import com.jetbrains.toolbox.api.remoteDev.ui.EnvironmentUiPageManager
+import com.jetbrains.toolbox.api.ui.ToolboxUi
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Entry point for the GitHub Codespaces Toolbox plugin.
@@ -12,20 +18,13 @@ import com.jetbrains.toolbox.api.remoteDev.RemoteProvider
 class CodespacesToolboxExtension : RemoteDevExtension {
 
     override fun createRemoteProviderPluginInstance(serviceLocator: ServiceLocator): RemoteProvider {
-        // Get required services from Toolbox
-        val logger = serviceLocator.getService(com.jetbrains.toolbox.api.core.diagnostics.Logger::class.java)
-        val httpClient = serviceLocator.getService(com.jetbrains.toolbox.api.core.http.HttpClient::class.java)
-        val uiScope = serviceLocator.getService(com.jetbrains.toolbox.api.ui.UiScope::class.java)
-        val remoteDevService = serviceLocator.getService(com.jetbrains.toolbox.api.remoteDev.RemoteDevService::class.java)
-        val settingsStore = serviceLocator.getService(com.jetbrains.toolbox.api.core.settings.SettingsStore::class.java)
-
-        // Create our context with all dependencies
         val context = CodespacesContext(
-            logger = logger,
-            httpClient = httpClient,
-            uiScope = uiScope,
-            remoteDevService = remoteDevService,
-            settingsStore = settingsStore
+            logger = serviceLocator.getService(Logger::class.java),
+            ui = serviceLocator.getService(ToolboxUi::class.java),
+            envPageManager = serviceLocator.getService(EnvironmentUiPageManager::class.java),
+            colorPalette = serviceLocator.getService(EnvironmentStateColorPalette::class.java),
+            i18n = serviceLocator.getService(LocalizableStringFactory::class.java),
+            scope = serviceLocator.getService(CoroutineScope::class.java)
         )
 
         return CodespacesRemoteProvider(context)

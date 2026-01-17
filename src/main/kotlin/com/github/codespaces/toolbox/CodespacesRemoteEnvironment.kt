@@ -3,13 +3,18 @@ package com.github.codespaces.toolbox
 import com.github.codespaces.toolbox.cli.GhCli
 import com.github.codespaces.toolbox.models.Codespace
 import com.github.codespaces.toolbox.models.CodespaceState
+import com.jetbrains.toolbox.api.localization.LocalizableString
 import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
+import com.jetbrains.toolbox.api.remoteDev.environments.EnvironmentContentsView
+import com.jetbrains.toolbox.api.remoteDev.environments.EnvironmentVisibilityState
 import com.jetbrains.toolbox.api.remoteDev.environments.RemoteEnvironmentState
-import com.jetbrains.toolbox.api.ui.actions.RunnableAction
+import com.jetbrains.toolbox.api.remoteDev.environments.SshEnvironmentContentsView
+import com.jetbrains.toolbox.api.remoteDev.environments.EnvironmentDescription
+import com.jetbrains.toolbox.api.ui.actions.ActionDescription
+import com.jetbrains.toolbox.api.ui.actions.RunnableActionDescription
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Represents a single GitHub Codespace as a remote environment in Toolbox.
@@ -22,56 +27,64 @@ class CodespacesRemoteEnvironment(
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    private val _state = MutableStateFlow(mapCodespaceState(codespace.state))
-    override val state: StateFlow<RemoteEnvironmentState> = _state.asStateFlow()
+    override var name: String = codespace.name
 
-    private val _description = MutableStateFlow(buildDescription())
-    override val description: StateFlow<String> = _description.asStateFlow()
+    override val connectionRequest: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    private val _actionsList = MutableStateFlow(buildActions())
-    override val actions: StateFlow<List<RunnableAction>> = _actionsList.asStateFlow()
+    override val state: MutableStateFlow<RemoteEnvironmentState> = MutableStateFlow(
+        mapCodespaceState(codespace.state)
+    )
 
-    override val displayName: String
-        get() = codespace.friendlyName
+    override val description: MutableStateFlow<EnvironmentDescription> = MutableStateFlow(
+        EnvironmentDescription.General(buildDescriptionText())
+    )
+
+    override val additionalEnvironmentInformation: MutableMap<LocalizableString, String> = mutableMapOf()
+
+    override val actionsList: MutableStateFlow<List<ActionDescription>> = MutableStateFlow(buildActions())
+
+    override val deleteActionFlow: StateFlow<(() -> Unit)?> = MutableStateFlow(null)
 
     /**
      * Update the environment with fresh codespace data.
      */
     fun update(newCodespace: Codespace) {
         codespace = newCodespace
-        _state.value = mapCodespaceState(codespace.state)
-        _description.value = buildDescription()
-        _actionsList.value = buildActions()
+        name = codespace.name
+        state.value = mapCodespaceState(codespace.state)
+        description.value = EnvironmentDescription.General(buildDescriptionText())
+        actionsList.value = buildActions()
     }
 
-    /**
-     * Connect to this codespace.
-     */
-    fun connect() {
-        scope.launch {
-            try {
-                // Start the codespace if needed
-                if (codespace.canStart) {
-                    _state.value = RemoteEnvironmentState.Starting
-                    ghCli.startCodespace(codespace.name).onFailure { error ->
-                        context.logger.error(error) { "Failed to start codespace" }
-                        _state.value = RemoteEnvironmentState.Error("Failed to start: ${error.message}")
-                        return@launch
-                    }
-                }
+    override suspend fun getContentsView(): EnvironmentContentsView {
+        // Ensure codespace is running before providing SSH view
+        if (codespace.canStart) {
+            state.value = RemoteEnvironmentState.Starting
+            ghCli.startCodespace(codespace.name).onFailure { error ->
+                context.logger.error(error) { "Failed to start codespace" }
+                state.value = RemoteEnvironmentState.Error("Failed to start: ${error.message}")
+                throw error
+            }
+            waitForReady()
+        }
 
-                // Wait for codespace to be ready
-                waitForReady()
+        val sshHost = ghCli.getSshHostForCodespace(codespace.name).getOrThrow()
+        context.logger.info { "Providing SSH connection to: $sshHost" }
 
-                // Get SSH host for this codespace
-                val sshHost = ghCli.getSshHostForCodespace(codespace.name).getOrThrow()
+        return SshEnvironmentContentsView.Impl(
+            host = sshHost,
+            user = null,
+            port = null
+        )
+    }
 
-                // Log the connection attempt (actual Toolbox connection integration pending)
-                context.logger.info { "Ready to connect via SSH to: $sshHost" }
-
-            } catch (e: Exception) {
-                context.logger.error(e) { "Failed to connect to codespace" }
-                _state.value = RemoteEnvironmentState.Error("Connection failed: ${e.message}")
+    override fun setVisible(visibilityState: EnvironmentVisibilityState) {
+        when (visibilityState) {
+            EnvironmentVisibilityState.Visible -> {
+                context.logger.debug { "Environment visible: ${codespace.name}" }
+            }
+            EnvironmentVisibilityState.Hidden -> {
+                context.logger.debug { "Environment hidden: ${codespace.name}" }
             }
         }
     }
@@ -97,7 +110,7 @@ class CodespacesRemoteEnvironment(
         private const val POLL_DELAY_MS = 2_000L
     }
 
-    private fun buildDescription(): String {
+    private fun buildDescriptionText(): String {
         val parts = mutableListOf<String>()
 
         parts.add(codespace.repository)
@@ -113,27 +126,33 @@ class CodespacesRemoteEnvironment(
         return parts.joinToString(" | ")
     }
 
-    private fun buildActions(): List<RunnableAction> {
-        val actions = mutableListOf<RunnableAction>()
+    private fun buildActions(): List<ActionDescription> {
+        val actions = mutableListOf<ActionDescription>()
 
         if (codespace.canStart) {
-            actions.add(RunnableAction("Start") {
+            actions.add(RunnableActionDescription(
+                context.i18n.create("Start"),
+                isEnabled = true
+            ) {
                 scope.launch {
-                    _state.value = RemoteEnvironmentState.Starting
+                    state.value = RemoteEnvironmentState.Starting
                     ghCli.startCodespace(codespace.name).onSuccess {
                         context.logger.info { "Started codespace: ${codespace.name}" }
                     }.onFailure { error ->
                         context.logger.error(error) { "Failed to start codespace" }
-                        _state.value = RemoteEnvironmentState.Error("Failed to start")
+                        state.value = RemoteEnvironmentState.Error("Failed to start")
                     }
                 }
             })
         }
 
         if (codespace.canStop) {
-            actions.add(RunnableAction("Stop") {
+            actions.add(RunnableActionDescription(
+                context.i18n.create("Stop"),
+                isEnabled = true
+            ) {
                 scope.launch {
-                    _state.value = RemoteEnvironmentState.Stopping
+                    state.value = RemoteEnvironmentState.Stopping
                     ghCli.stopCodespace(codespace.name).onSuccess {
                         context.logger.info { "Stopped codespace: ${codespace.name}" }
                     }.onFailure { error ->
@@ -146,8 +165,8 @@ class CodespacesRemoteEnvironment(
         return actions
     }
 
-    private fun mapCodespaceState(state: CodespaceState): RemoteEnvironmentState {
-        return when (state) {
+    private fun mapCodespaceState(csState: CodespaceState): RemoteEnvironmentState {
+        return when (csState) {
             CodespaceState.AVAILABLE -> RemoteEnvironmentState.Active
             CodespaceState.SHUTDOWN, CodespaceState.STOPPED -> RemoteEnvironmentState.Inactive
             CodespaceState.STARTING, CodespaceState.PROVISIONING, CodespaceState.QUEUED -> RemoteEnvironmentState.Starting

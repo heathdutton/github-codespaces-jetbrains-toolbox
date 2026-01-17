@@ -1,19 +1,21 @@
 package com.github.codespaces.toolbox
 
 import com.jetbrains.toolbox.api.core.diagnostics.Logger
-import com.jetbrains.toolbox.api.core.http.HttpClient
-import com.jetbrains.toolbox.api.core.settings.SettingsStore
-import com.jetbrains.toolbox.api.remoteDev.RemoteDevService
-import com.jetbrains.toolbox.api.ui.UiScope
+import com.jetbrains.toolbox.api.localization.LocalizableStringFactory
+import com.jetbrains.toolbox.api.remoteDev.states.EnvironmentStateColorPalette
+import com.jetbrains.toolbox.api.remoteDev.ui.EnvironmentUiPageManager
+import com.jetbrains.toolbox.api.ui.ToolboxUi
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Context object that holds all dependencies for the plugin.
- * This is passed around to avoid constructor parameter explosion.
+ * Services are retrieved from the Toolbox ServiceLocator.
  */
 data class CodespacesContext(
     val logger: Logger,
-    val httpClient: HttpClient,
-    val uiScope: UiScope,
-    val remoteDevService: RemoteDevService,
-    val settingsStore: SettingsStore
+    val ui: ToolboxUi,
+    val envPageManager: EnvironmentUiPageManager,
+    val colorPalette: EnvironmentStateColorPalette,
+    val i18n: LocalizableStringFactory,
+    val scope: CoroutineScope
 )
