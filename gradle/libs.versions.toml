@@ -41,5 +41,5 @@ toolbox-plugin-api = ["toolbox-core-api", "toolbox-ui-api", "toolbox-remote-dev-
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version = "2.1.20-1.0.32" }
+ksp = { id = "com.google.devtools.ksp", version = "2.3.4" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
