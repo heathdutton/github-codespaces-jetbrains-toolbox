@@ -16,15 +16,12 @@ class SetupWizardPage(
     private val onAuthenticated: () -> Unit,
     private val context: CodespacesContext,
     private val ghNotInstalled: Boolean = false
-) : UiPage {
+) : UiPage(context.i18n.ptrl("GitHub Codespaces Setup")) {
 
     private val ghCli = GhCli()
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    private val _title = MutableStateFlow(context.i18n.ptrl("GitHub Codespaces Setup"))
-    override fun getTitle(): StateFlow<LocalizableString> = _title
-
-    private val _description = MutableStateFlow(
+    override val description: StateFlow<LocalizableString?> = MutableStateFlow(
         if (ghNotInstalled) {
             context.i18n.ptrl("""
                 The GitHub CLI (gh) is not installed or not in your PATH.
@@ -45,7 +42,6 @@ class SetupWizardPage(
             """.trimIndent())
         }
     )
-    override fun getDescription(): StateFlow<LocalizableString?> = _description
 
     /**
      * Check if authentication is now complete.

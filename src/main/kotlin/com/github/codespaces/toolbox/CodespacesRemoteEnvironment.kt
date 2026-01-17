@@ -77,14 +77,7 @@ class CodespacesRemoteEnvironment(
     }
 
     override fun setVisible(visibilityState: EnvironmentVisibilityState) {
-        when (visibilityState) {
-            EnvironmentVisibilityState.Visible -> {
-                context.logger.debug { "Environment visible: ${codespace.name}" }
-            }
-            EnvironmentVisibilityState.Hidden -> {
-                context.logger.debug { "Environment hidden: ${codespace.name}" }
-            }
-        }
+        // Handle visibility changes if needed
     }
 
     private suspend fun waitForReady(timeoutMs: Long = STARTUP_TIMEOUT_MS) {
@@ -178,18 +171,17 @@ class CodespacesRemoteEnvironment(
 private class CodespacesSshContentsView(
     private val sshHost: String
 ) : SshEnvironmentContentsView {
-    override fun getConnectionInfo(): SshConnectionInfo = CodespacesSshConnectionInfo(sshHost)
+    override suspend fun getConnectionInfo(): SshConnectionInfo = CodespacesSshConnectionInfo(sshHost)
 }
 
 /**
  * SSH connection info for a codespace.
  */
 private class CodespacesSshConnectionInfo(
-    private val sshHost: String
+    override val host: String
 ) : SshConnectionInfo {
-    override fun getHost(): String = sshHost
-    override fun getPort(): Int = 22
-    override fun getUserName(): String? = null
+    override val port: Int = 22
+    override val userName: String? = null
 }
 
 /**
@@ -197,18 +189,18 @@ private class CodespacesSshConnectionInfo(
  */
 class CodespacesAction(
     private val context: CodespacesContext,
-    private val label: String,
+    actionLabel: String,
     private val actionBlock: suspend () -> Unit
 ) : RunnableActionDescription {
     
-    override fun getName(): LocalizableString = context.i18n.ptrl(label)
+    override val name: LocalizableString = context.i18n.ptrl(actionLabel)
 
     override fun run() {
         context.scope.launch {
             try {
                 actionBlock()
             } catch (e: Exception) {
-                context.logger.error(e) { "Action failed: $label" }
+                context.logger.error(e) { "Action failed: ${name}" }
             }
         }
     }
