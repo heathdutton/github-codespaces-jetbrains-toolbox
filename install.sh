@@ -56,14 +56,15 @@ if [ -z "$LATEST_URL" ]; then
     exit 1
 fi
 
-# Create plugin directory
-mkdir -p "$PLUGIN_DIR"
-cd "$PLUGIN_DIR"
+# Get parent plugins directory
+PLUGINS_DIR="$(dirname "$PLUGIN_DIR")"
+mkdir -p "$PLUGINS_DIR"
+cd "$PLUGINS_DIR"
 
 # Clean old installation
-rm -rf lib extension.json *.jar
+rm -rf "$PLUGIN_ID"
 
-# Download and extract
+# Download and extract (zip contains the plugin folder)
 echo "Downloading from $LATEST_URL"
 curl -sL "$LATEST_URL" -o plugin.zip
 unzip -q -o plugin.zip

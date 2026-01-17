@@ -90,15 +90,18 @@ tasks.register<Zip>("buildPlugin") {
     archiveFileName.set("$pluginId-$version.zip")
     destinationDirectory.set(layout.buildDirectory.dir("distributions"))
 
+    // Everything goes inside a folder named after the plugin ID
     // Plugin JAR and all dependencies go in lib/
     from(tasks.named("jar")) {
-        into("lib")
+        into("$pluginId/lib")
     }
     from(configurations.runtimeClasspath) {
-        into("lib")
+        into("$pluginId/lib")
     }
-    // extension.json at root
-    from(layout.buildDirectory.dir("pluginDescriptor"))
+    // extension.json in plugin root
+    from(layout.buildDirectory.dir("pluginDescriptor")) {
+        into(pluginId)
+    }
 }
 
 // Install plugin to Toolbox plugins directory
