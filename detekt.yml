@@ -6,6 +6,8 @@ style:
     maxLineLength: 150
   WildcardImport:
     active: false
+  ForbiddenComment:
+    active: false  # Allow TODO comments during development
 
 complexity:
   TooManyFunctions:
@@ -14,3 +16,11 @@ complexity:
   LongParameterList:
     functionThreshold: 8
     constructorThreshold: 10
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false  # We intentionally catch Exception to convert to Result
+  TooGenericExceptionThrown:
+    active: false  # Allow RuntimeException in specific cases
+  SwallowedException:
+    active: false  # We handle exceptions by returning status objects

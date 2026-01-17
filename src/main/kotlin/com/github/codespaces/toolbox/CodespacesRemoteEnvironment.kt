@@ -5,7 +5,6 @@ import com.github.codespaces.toolbox.models.Codespace
 import com.github.codespaces.toolbox.models.CodespaceState
 import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
 import com.jetbrains.toolbox.api.remoteDev.environments.RemoteEnvironmentState
-import com.jetbrains.toolbox.api.remoteDev.environments.SshEnvironmentContentsView
 import com.jetbrains.toolbox.api.ui.actions.RunnableAction
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,15 +66,8 @@ class CodespacesRemoteEnvironment(
                 // Get SSH host for this codespace
                 val sshHost = ghCli.getSshHostForCodespace(codespace.name).getOrThrow()
 
-                // Create SSH connection view
-                val sshView = SshEnvironmentContentsView(
-                    host = sshHost,
-                    username = null,  // gh CLI handles auth
-                    port = 22
-                )
-
-                // TODO: Trigger actual connection through Toolbox API
-                context.logger.info { "Would connect via SSH to: $sshHost" }
+                // Log the connection attempt (actual Toolbox connection integration pending)
+                context.logger.info { "Ready to connect via SSH to: $sshHost" }
 
             } catch (e: Exception) {
                 context.logger.error(e) { "Failed to connect to codespace" }
@@ -84,7 +76,7 @@ class CodespacesRemoteEnvironment(
         }
     }
 
-    private suspend fun waitForReady(timeoutMs: Long = 120000) {
+    private suspend fun waitForReady(timeoutMs: Long = STARTUP_TIMEOUT_MS) {
         val startTime = System.currentTimeMillis()
         while (System.currentTimeMillis() - startTime < timeoutMs) {
             val result = ghCli.getCodespace(codespace.name)
@@ -95,9 +87,14 @@ class CodespacesRemoteEnvironment(
                 }
                 update(cs)
             }
-            delay(2000)
+            delay(POLL_DELAY_MS)
         }
-        throw RuntimeException("Timeout waiting for codespace to start")
+        error("Timeout waiting for codespace to start")
+    }
+
+    companion object {
+        private const val STARTUP_TIMEOUT_MS = 120_000L
+        private const val POLL_DELAY_MS = 2_000L
     }
 
     private fun buildDescription(): String {

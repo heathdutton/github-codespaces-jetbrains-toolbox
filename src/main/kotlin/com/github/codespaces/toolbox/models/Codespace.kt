@@ -97,17 +97,21 @@ data class Machine(
      * Human-readable memory size.
      */
     val memoryDisplay: String
-        get() = "${memoryInBytes / (1024 * 1024 * 1024)} GB"
+        get() = "${memoryInBytes / BYTES_PER_GB} GB"
 
     /**
      * Human-readable storage size.
      */
     val storageDisplay: String
-        get() = "${storageInBytes / (1024 * 1024 * 1024)} GB"
+        get() = "${storageInBytes / BYTES_PER_GB} GB"
 
     /**
      * Short description like "4 cores, 16 GB RAM".
      */
     val shortDescription: String
         get() = "$cpus cores, $memoryDisplay RAM"
+
+    companion object {
+        private const val BYTES_PER_GB = 1024L * 1024L * 1024L
+    }
 }

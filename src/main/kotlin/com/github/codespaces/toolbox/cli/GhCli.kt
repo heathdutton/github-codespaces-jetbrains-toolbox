@@ -153,8 +153,12 @@ class GhCli(
         return ProcessExecutor()
             .command(ghPath, *args)
             .readOutput(true)
-            .timeout(60, TimeUnit.SECONDS)
+            .timeout(COMMAND_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .execute()
+    }
+
+    companion object {
+        private const val COMMAND_TIMEOUT_SECONDS = 60L
     }
 }
 

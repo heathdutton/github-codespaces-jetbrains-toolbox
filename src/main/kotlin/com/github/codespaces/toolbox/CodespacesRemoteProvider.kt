@@ -112,28 +112,29 @@ class CodespacesRemoteProvider(
      * Format: jetbrains://gateway/connect#codespace=<name>
      */
     override suspend fun handleUri(uri: String): Boolean {
-        // Parse URI parameters
         val params = parseUriParams(uri)
-        val codespaceName = params["codespace"] ?: return false
+        val codespaceName = params["codespace"]
+
+        if (codespaceName == null) {
+            return false
+        }
 
         context.logger.info { "Handling URI for codespace: $codespaceName" }
 
         // Find or create the environment
         val environment = environmentCache[codespaceName]
             ?: run {
-                // Refresh to get the codespace
                 refreshCodespaces()
                 environmentCache[codespaceName]
             }
 
-        if (environment != null) {
-            // Trigger connection
+        return if (environment != null) {
             environment.connect()
-            return true
+            true
+        } else {
+            context.logger.warn { "Could not find codespace: $codespaceName" }
+            false
         }
-
-        context.logger.warn { "Could not find codespace: $codespaceName" }
-        return false
     }
 
     private fun parseUriParams(uri: String): Map<String, String> {
