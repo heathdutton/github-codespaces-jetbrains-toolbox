@@ -4,12 +4,13 @@ import com.github.codespaces.toolbox.cli.GhCli
 import com.github.codespaces.toolbox.models.Codespace
 import com.github.codespaces.toolbox.models.CodespaceState
 import com.jetbrains.toolbox.api.localization.LocalizableString
+import com.jetbrains.toolbox.api.remoteDev.EnvironmentVisibilityState
 import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
 import com.jetbrains.toolbox.api.remoteDev.environments.EnvironmentContentsView
-import com.jetbrains.toolbox.api.remoteDev.environments.EnvironmentVisibilityState
-import com.jetbrains.toolbox.api.remoteDev.environments.RemoteEnvironmentState
 import com.jetbrains.toolbox.api.remoteDev.environments.SshEnvironmentContentsView
-import com.jetbrains.toolbox.api.remoteDev.environments.EnvironmentDescription
+import com.jetbrains.toolbox.api.remoteDev.environments.SshConnectionInfo
+import com.jetbrains.toolbox.api.remoteDev.states.EnvironmentDescription
+import com.jetbrains.toolbox.api.remoteDev.states.RemoteEnvironmentState
 import com.jetbrains.toolbox.api.ui.actions.ActionDescription
 import com.jetbrains.toolbox.api.ui.actions.RunnableActionDescription
 import kotlinx.coroutines.*
@@ -71,11 +72,7 @@ class CodespacesRemoteEnvironment(
         val sshHost = ghCli.getSshHostForCodespace(codespace.name).getOrThrow()
         context.logger.info { "Providing SSH connection to: $sshHost" }
 
-        return SshEnvironmentContentsView.Impl(
-            host = sshHost,
-            user = null,
-            port = null
-        )
+        return CodespacesSshContentsView(sshHost)
     }
 
     override fun setVisible(visibilityState: EnvironmentVisibilityState) {
@@ -130,34 +127,24 @@ class CodespacesRemoteEnvironment(
         val actions = mutableListOf<ActionDescription>()
 
         if (codespace.canStart) {
-            actions.add(RunnableActionDescription(
-                context.i18n.create("Start"),
-                isEnabled = true
-            ) {
-                scope.launch {
-                    state.value = RemoteEnvironmentState.Starting
-                    ghCli.startCodespace(codespace.name).onSuccess {
-                        context.logger.info { "Started codespace: ${codespace.name}" }
-                    }.onFailure { error ->
-                        context.logger.error(error) { "Failed to start codespace" }
-                        state.value = RemoteEnvironmentState.Error("Failed to start")
-                    }
+            actions.add(CodespacesAction(context, "Start") {
+                state.value = RemoteEnvironmentState.Starting
+                ghCli.startCodespace(codespace.name).onSuccess {
+                    context.logger.info { "Started codespace: ${codespace.name}" }
+                }.onFailure { error ->
+                    context.logger.error(error) { "Failed to start codespace" }
+                    state.value = RemoteEnvironmentState.Error("Failed to start")
                 }
             })
         }
 
         if (codespace.canStop) {
-            actions.add(RunnableActionDescription(
-                context.i18n.create("Stop"),
-                isEnabled = true
-            ) {
-                scope.launch {
-                    state.value = RemoteEnvironmentState.Stopping
-                    ghCli.stopCodespace(codespace.name).onSuccess {
-                        context.logger.info { "Stopped codespace: ${codespace.name}" }
-                    }.onFailure { error ->
-                        context.logger.error(error) { "Failed to stop codespace" }
-                    }
+            actions.add(CodespacesAction(context, "Stop") {
+                state.value = RemoteEnvironmentState.Stopping
+                ghCli.stopCodespace(codespace.name).onSuccess {
+                    context.logger.info { "Stopped codespace: ${codespace.name}" }
+                }.onFailure { error ->
+                    context.logger.error(error) { "Failed to stop codespace" }
                 }
             })
         }
@@ -180,5 +167,46 @@ class CodespacesRemoteEnvironment(
 
     fun dispose() {
         scope.cancel()
+    }
+}
+
+/**
+ * SSH contents view for connecting to a codespace.
+ */
+private class CodespacesSshContentsView(
+    private val sshHost: String
+) : SshEnvironmentContentsView {
+    override val sshConnectionInfo: SshConnectionInfo = CodespacesSshConnectionInfo(sshHost)
+}
+
+/**
+ * SSH connection info for a codespace.
+ */
+private class CodespacesSshConnectionInfo(
+    override val host: String
+) : SshConnectionInfo {
+    override val port: Int? = null
+    override val userName: String? = null
+}
+
+/**
+ * Action implementation for codespace operations.
+ */
+class CodespacesAction(
+    private val context: CodespacesContext,
+    private val label: String,
+    private val actionBlock: suspend () -> Unit
+) : RunnableActionDescription {
+    
+    override val name: LocalizableString = context.i18n.create(label)
+
+    override fun run() {
+        context.scope.launch {
+            try {
+                actionBlock()
+            } catch (e: Exception) {
+                context.logger.error(e) { "Action failed: $label" }
+            }
+        }
     }
 }

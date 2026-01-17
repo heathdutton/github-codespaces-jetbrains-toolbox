@@ -2,14 +2,14 @@ package com.github.codespaces.toolbox
 
 import com.github.codespaces.toolbox.cli.AuthStatus
 import com.github.codespaces.toolbox.cli.GhCli
+import com.jetbrains.toolbox.api.core.ui.icons.SvgIcon
+import com.jetbrains.toolbox.api.core.util.LoadableState
 import com.jetbrains.toolbox.api.localization.LocalizableString
 import com.jetbrains.toolbox.api.remoteDev.ProviderVisibilityState
 import com.jetbrains.toolbox.api.remoteDev.RemoteProvider
 import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
-import com.jetbrains.toolbox.api.remoteDev.states.LoadableState
 import com.jetbrains.toolbox.api.ui.actions.ActionDescription
 import com.jetbrains.toolbox.api.ui.components.UiPage
-import com.jetbrains.toolbox.api.ui.content.SvgIcon
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,16 +36,15 @@ class CodespacesRemoteProvider(
     private val _environments = MutableStateFlow<LoadableState<List<CodespacesRemoteEnvironment>>>(
         LoadableState.Loading
     )
-    override val environments: StateFlow<LoadableState<List<CodespacesRemoteEnvironment>>> = _environments
+    override val environments: MutableStateFlow<LoadableState<List<CodespacesRemoteEnvironment>>> = _environments
 
-    override val svgIcon: SvgIcon = SvgIcon(GITHUB_ICON_SVG)
+    override val svgIcon: SvgIcon = SvgIcon(GITHUB_ICON_SVG.toByteArray())
 
     override val noEnvironmentsSvgIcon: SvgIcon? = null
 
-    override val noEnvironmentsDescription: String? = "No codespaces found. Create one on github.com"
+    override val noEnvironmentsDescription: LocalizableString = context.i18n.create("No codespaces found. Create one on github.com")
 
-    override val loadingEnvironmentsDescription: LocalizableString
-        get() = context.i18n.create("Loading codespaces...")
+    override val loadingEnvironmentsDescription: LocalizableString = context.i18n.create("Loading codespaces...")
 
     override val canCreateNewEnvironments: Boolean = false
 
@@ -99,7 +98,7 @@ class CodespacesRemoteProvider(
             }
 
         return if (environment != null) {
-            environment.connect()
+            environment.connectionRequest.value = true
             true
         } else {
             context.logger.warn { "Could not find codespace: $codespaceName" }
@@ -142,7 +141,7 @@ class CodespacesRemoteProvider(
             val currentNames = codespaces.map { it.name }.toSet()
             environmentCache.keys.removeIf { it !in currentNames }
 
-            _environments.value = LoadableState.Loaded(environments)
+            _environments.value = LoadableState.Value(environments)
         }.onFailure { error ->
             context.logger.error(error) { "Failed to list codespaces" }
             _environments.value = LoadableState.Error(error.message ?: "Failed to load codespaces")
