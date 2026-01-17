@@ -26,21 +26,26 @@
    gh auth login
    ```
 
-### Install from Releases
+### Quick Install
 
-1. **Close JetBrains Toolbox**
+```bash
+curl -fsSL https://raw.githubusercontent.com/heathdutton/github-codespaces-jetbrains-toolbox/main/install.sh | bash
+```
 
-2. **Download** the latest `.zip` from [Releases](../../releases)
+Then restart JetBrains Toolbox.
 
-3. **Extract** to your plugins directory:
+### Manual Install
+
+1. Download the latest `.zip` from [Releases](../../releases)
+2. Extract to your plugins directory:
 
    | OS | Path |
    |----|------|
-   | macOS | `~/Library/Caches/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/` |
+   | macOS | `~/Library/Application Support/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/` |
    | Linux | `~/.local/share/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/` |
    | Windows | `%LocalAppData%\JetBrains\Toolbox\plugins\com.github.codespaces.toolbox\` |
 
-4. **Restart** JetBrains Toolbox
+3. Restart JetBrains Toolbox
 
 ---
 
