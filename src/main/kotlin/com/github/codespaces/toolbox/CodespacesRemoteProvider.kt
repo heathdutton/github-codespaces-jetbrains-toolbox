@@ -7,7 +7,6 @@ import com.jetbrains.toolbox.api.core.util.LoadableState
 import com.jetbrains.toolbox.api.localization.LocalizableString
 import com.jetbrains.toolbox.api.remoteDev.ProviderVisibilityState
 import com.jetbrains.toolbox.api.remoteDev.RemoteProvider
-import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
 import com.jetbrains.toolbox.api.ui.actions.ActionDescription
 import com.jetbrains.toolbox.api.ui.components.UiPage
 import kotlinx.coroutines.Job
@@ -42,13 +41,15 @@ class CodespacesRemoteProvider(
 
     override val noEnvironmentsSvgIcon: SvgIcon? = null
 
-    override val noEnvironmentsDescription: LocalizableString = context.i18n.create("No codespaces found. Create one on github.com")
+    override fun getNoEnvironmentsDescription(): LocalizableString? = 
+        context.i18n.ptrl("No codespaces found. Create one on github.com")
 
-    override val loadingEnvironmentsDescription: LocalizableString = context.i18n.create("Loading codespaces...")
+    override fun getLoadingEnvironmentsDescription(): LocalizableString = 
+        context.i18n.ptrl("Loading codespaces...")
 
-    override val canCreateNewEnvironments: Boolean = false
+    override fun canCreateNewEnvironments(): Boolean = false
 
-    override val isSingleEnvironment: Boolean = false
+    override fun isSingleEnvironment(): Boolean = false
 
     override val additionalPluginActions: StateFlow<List<ActionDescription>> = MutableStateFlow(emptyList())
 
@@ -64,8 +65,7 @@ class CodespacesRemoteProvider(
                 null
             }
             is AuthStatus.NotAuthenticated, is AuthStatus.NotInstalled -> {
-                // Return a simple setup page
-                null // For now, return null - users must auth via CLI
+                null
             }
         }
     }
@@ -85,9 +85,9 @@ class CodespacesRemoteProvider(
         }
     }
 
-    override suspend fun handleUri(uri: URI): Boolean {
+    override suspend fun handleUri(uri: URI) {
         val params = parseUriParams(uri.fragment ?: "")
-        val codespaceName = params["codespace"] ?: return false
+        val codespaceName = params["codespace"] ?: return
 
         context.logger.info { "Handling URI for codespace: $codespaceName" }
 
@@ -97,12 +97,10 @@ class CodespacesRemoteProvider(
                 environmentCache[codespaceName]
             }
 
-        return if (environment != null) {
+        if (environment != null) {
             environment.connectionRequest.value = true
-            true
         } else {
             context.logger.warn { "Could not find codespace: $codespaceName" }
-            false
         }
     }
 

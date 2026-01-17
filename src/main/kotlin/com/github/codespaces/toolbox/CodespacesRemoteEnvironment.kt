@@ -8,9 +8,10 @@ import com.jetbrains.toolbox.api.remoteDev.EnvironmentVisibilityState
 import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
 import com.jetbrains.toolbox.api.remoteDev.environments.EnvironmentContentsView
 import com.jetbrains.toolbox.api.remoteDev.environments.SshEnvironmentContentsView
-import com.jetbrains.toolbox.api.remoteDev.environments.SshConnectionInfo
+import com.jetbrains.toolbox.api.remoteDev.ssh.SshConnectionInfo
 import com.jetbrains.toolbox.api.remoteDev.states.EnvironmentDescription
 import com.jetbrains.toolbox.api.remoteDev.states.RemoteEnvironmentState
+import com.jetbrains.toolbox.api.remoteDev.states.StandardRemoteEnvironmentState
 import com.jetbrains.toolbox.api.ui.actions.ActionDescription
 import com.jetbrains.toolbox.api.ui.actions.RunnableActionDescription
 import kotlinx.coroutines.*
@@ -37,7 +38,7 @@ class CodespacesRemoteEnvironment(
     )
 
     override val description: MutableStateFlow<EnvironmentDescription> = MutableStateFlow(
-        EnvironmentDescription.General(buildDescriptionText())
+        EnvironmentDescription.General(context.i18n.ptrl(buildDescriptionText()))
     )
 
     override val additionalEnvironmentInformation: MutableMap<LocalizableString, String> = mutableMapOf()
@@ -53,17 +54,17 @@ class CodespacesRemoteEnvironment(
         codespace = newCodespace
         name = codespace.name
         state.value = mapCodespaceState(codespace.state)
-        description.value = EnvironmentDescription.General(buildDescriptionText())
+        description.value = EnvironmentDescription.General(context.i18n.ptrl(buildDescriptionText()))
         actionsList.value = buildActions()
     }
 
     override suspend fun getContentsView(): EnvironmentContentsView {
         // Ensure codespace is running before providing SSH view
         if (codespace.canStart) {
-            state.value = RemoteEnvironmentState.Starting
+            state.value = StandardRemoteEnvironmentState.Activating
             ghCli.startCodespace(codespace.name).onFailure { error ->
                 context.logger.error(error) { "Failed to start codespace" }
-                state.value = RemoteEnvironmentState.Error("Failed to start: ${error.message}")
+                state.value = StandardRemoteEnvironmentState.Unreachable
                 throw error
             }
             waitForReady()
@@ -128,21 +129,22 @@ class CodespacesRemoteEnvironment(
 
         if (codespace.canStart) {
             actions.add(CodespacesAction(context, "Start") {
-                state.value = RemoteEnvironmentState.Starting
+                state.value = StandardRemoteEnvironmentState.Activating
                 ghCli.startCodespace(codespace.name).onSuccess {
                     context.logger.info { "Started codespace: ${codespace.name}" }
                 }.onFailure { error ->
                     context.logger.error(error) { "Failed to start codespace" }
-                    state.value = RemoteEnvironmentState.Error("Failed to start")
+                    state.value = StandardRemoteEnvironmentState.Unreachable
                 }
             })
         }
 
         if (codespace.canStop) {
             actions.add(CodespacesAction(context, "Stop") {
-                state.value = RemoteEnvironmentState.Stopping
+                state.value = StandardRemoteEnvironmentState.Activating
                 ghCli.stopCodespace(codespace.name).onSuccess {
                     context.logger.info { "Stopped codespace: ${codespace.name}" }
+                    state.value = StandardRemoteEnvironmentState.Inactive
                 }.onFailure { error ->
                     context.logger.error(error) { "Failed to stop codespace" }
                 }
@@ -154,14 +156,14 @@ class CodespacesRemoteEnvironment(
 
     private fun mapCodespaceState(csState: CodespaceState): RemoteEnvironmentState {
         return when (csState) {
-            CodespaceState.AVAILABLE -> RemoteEnvironmentState.Active
-            CodespaceState.SHUTDOWN, CodespaceState.STOPPED -> RemoteEnvironmentState.Inactive
-            CodespaceState.STARTING, CodespaceState.PROVISIONING, CodespaceState.QUEUED -> RemoteEnvironmentState.Starting
-            CodespaceState.STOPPING -> RemoteEnvironmentState.Stopping
-            CodespaceState.REBUILDING, CodespaceState.UPDATING -> RemoteEnvironmentState.Starting
-            CodespaceState.UNAVAILABLE, CodespaceState.FAILED -> RemoteEnvironmentState.Error("Unavailable")
-            CodespaceState.DELETED, CodespaceState.ARCHIVED, CodespaceState.MOVED -> RemoteEnvironmentState.Inactive
-            CodespaceState.PENDING, CodespaceState.EXPORTING -> RemoteEnvironmentState.Starting
+            CodespaceState.AVAILABLE -> StandardRemoteEnvironmentState.Active
+            CodespaceState.SHUTDOWN, CodespaceState.STOPPED -> StandardRemoteEnvironmentState.Inactive
+            CodespaceState.STARTING, CodespaceState.PROVISIONING, CodespaceState.QUEUED -> StandardRemoteEnvironmentState.Activating
+            CodespaceState.STOPPING -> StandardRemoteEnvironmentState.Activating
+            CodespaceState.REBUILDING, CodespaceState.UPDATING -> StandardRemoteEnvironmentState.Activating
+            CodespaceState.UNAVAILABLE, CodespaceState.FAILED -> StandardRemoteEnvironmentState.Unreachable
+            CodespaceState.DELETED, CodespaceState.ARCHIVED, CodespaceState.MOVED -> StandardRemoteEnvironmentState.Inactive
+            CodespaceState.PENDING, CodespaceState.EXPORTING -> StandardRemoteEnvironmentState.Activating
         }
     }
 
@@ -176,17 +178,18 @@ class CodespacesRemoteEnvironment(
 private class CodespacesSshContentsView(
     private val sshHost: String
 ) : SshEnvironmentContentsView {
-    override val sshConnectionInfo: SshConnectionInfo = CodespacesSshConnectionInfo(sshHost)
+    override fun getConnectionInfo(): SshConnectionInfo = CodespacesSshConnectionInfo(sshHost)
 }
 
 /**
  * SSH connection info for a codespace.
  */
 private class CodespacesSshConnectionInfo(
-    override val host: String
+    private val sshHost: String
 ) : SshConnectionInfo {
-    override val port: Int? = null
-    override val userName: String? = null
+    override fun getHost(): String = sshHost
+    override fun getPort(): Int = 22
+    override fun getUserName(): String? = null
 }
 
 /**
@@ -198,7 +201,7 @@ class CodespacesAction(
     private val actionBlock: suspend () -> Unit
 ) : RunnableActionDescription {
     
-    override val name: LocalizableString = context.i18n.create(label)
+    override fun getName(): LocalizableString = context.i18n.ptrl(label)
 
     override fun run() {
         context.scope.launch {
