@@ -180,8 +180,12 @@ private class CodespacesSshContentsView(
 private class CodespacesSshConnectionInfo(
     override val host: String
 ) : SshConnectionInfo {
-    override val port: Int = 22
+    override val port: Int = SSH_PORT
     override val userName: String? = null
+
+    companion object {
+        private const val SSH_PORT = 22
+    }
 }
 
 /**
