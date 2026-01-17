@@ -61,7 +61,7 @@ mkdir -p "$PLUGIN_DIR"
 cd "$PLUGIN_DIR"
 
 # Clean old installation
-rm -rf lib extension.json
+rm -rf lib extension.json *.jar
 
 # Download and extract
 echo "Downloading from $LATEST_URL"
