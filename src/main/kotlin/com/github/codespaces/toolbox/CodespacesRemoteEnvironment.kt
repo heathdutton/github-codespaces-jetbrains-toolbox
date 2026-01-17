@@ -197,14 +197,14 @@ class CodespacesAction(
     private val actionBlock: suspend () -> Unit
 ) : RunnableActionDescription {
     
-    override val name: LocalizableString = context.i18n.ptrl(actionLabel)
+    override val label: LocalizableString = context.i18n.ptrl(actionLabel)
 
     override fun run() {
         context.scope.launch {
             try {
                 actionBlock()
             } catch (e: Exception) {
-                context.logger.error(e) { "Action failed: ${name}" }
+                context.logger.error(e) { "Action failed: $label" }
             }
         }
     }

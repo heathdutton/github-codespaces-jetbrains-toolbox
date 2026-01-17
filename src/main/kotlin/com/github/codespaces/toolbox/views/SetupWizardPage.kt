@@ -7,7 +7,6 @@ import com.jetbrains.toolbox.api.localization.LocalizableString
 import com.jetbrains.toolbox.api.ui.components.UiPage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Setup wizard page shown when the user needs to authenticate or install gh CLI.
@@ -15,33 +14,31 @@ import kotlinx.coroutines.flow.StateFlow
 class SetupWizardPage(
     private val onAuthenticated: () -> Unit,
     private val context: CodespacesContext,
-    private val ghNotInstalled: Boolean = false
-) : UiPage(context.i18n.ptrl("GitHub Codespaces Setup")) {
+    ghNotInstalled: Boolean = false
+) : UiPage(MutableStateFlow(context.i18n.ptrl("GitHub Codespaces Setup"))) {
 
     private val ghCli = GhCli()
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    override val description: StateFlow<LocalizableString?> = MutableStateFlow(
-        if (ghNotInstalled) {
-            context.i18n.ptrl("""
-                The GitHub CLI (gh) is not installed or not in your PATH.
+    override val description: LocalizableString? = if (ghNotInstalled) {
+        context.i18n.ptrl("""
+            The GitHub CLI (gh) is not installed or not in your PATH.
 
-                Please install it from: https://cli.github.com
+            Please install it from: https://cli.github.com
 
-                After installation, run: gh auth login
-            """.trimIndent())
-        } else {
-            context.i18n.ptrl("""
-                GitHub CLI is installed but not authenticated.
+            After installation, run: gh auth login
+        """.trimIndent())
+    } else {
+        context.i18n.ptrl("""
+            GitHub CLI is installed but not authenticated.
 
-                Please run the following command in your terminal:
+            Please run the following command in your terminal:
 
-                gh auth login
+            gh auth login
 
-                Then click "Check Authentication" below.
-            """.trimIndent())
-        }
-    )
+            Then click "Check Authentication" below.
+        """.trimIndent())
+    }
 
     /**
      * Check if authentication is now complete.

@@ -41,8 +41,7 @@ class CodespacesRemoteProvider(
 
     override val noEnvironmentsSvgIcon: SvgIcon? = null
 
-    override val noEnvironmentsDescription: LocalizableString? = 
-        context.i18n.ptrl("No codespaces found. Create one on github.com")
+    override val noEnvironmentsDescription: String? = "No codespaces found. Create one on github.com"
 
     override val loadingEnvironmentsDescription: LocalizableString = 
         context.i18n.ptrl("Loading codespaces...")
@@ -73,15 +72,12 @@ class CodespacesRemoteProvider(
     override fun getNewEnvironmentUiPage(): UiPage? = null
 
     override fun setVisible(visibility: ProviderVisibilityState) {
-        when (visibility) {
-            ProviderVisibilityState.Visible -> {
-                if (isAuthenticated) {
-                    startPolling()
-                }
+        if (visibility.providerVisible) {
+            if (isAuthenticated) {
+                startPolling()
             }
-            ProviderVisibilityState.Hidden -> {
-                pollingJob?.cancel()
-            }
+        } else {
+            pollingJob?.cancel()
         }
     }
 
@@ -142,7 +138,7 @@ class CodespacesRemoteProvider(
             _environments.value = LoadableState.Value(environments)
         }.onFailure { error ->
             context.logger.error(error) { "Failed to list codespaces" }
-            _environments.value = LoadableState.Error(error.message ?: "Failed to load codespaces")
+            // Keep current state on error, just log it
         }
     }
 
