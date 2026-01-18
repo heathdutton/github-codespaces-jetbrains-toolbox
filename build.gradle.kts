@@ -10,7 +10,7 @@ group = "com.github.codespaces"
 version = "0.1.0"
 
 val pluginId = "com.github.codespaces.toolbox"
-val pluginName = "GitHub Codespaces"
+val pluginName = "Codespaces"
 
 repositories {
     mavenCentral()

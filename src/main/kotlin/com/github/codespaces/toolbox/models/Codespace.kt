@@ -13,7 +13,7 @@ data class Codespace(
     val state: CodespaceState,
     val repository: String,
     val gitStatus: GitStatus? = null,
-    val machine: Machine? = null,
+    val machineName: String? = null,
     val createdAt: String? = null,
     val lastUsedAt: String? = null
 ) {
@@ -82,36 +82,3 @@ data class GitStatus(
     val hasUnpushedChanges: Boolean = false
 )
 
-/**
- * Machine type information.
- */
-@JsonClass(generateAdapter = true)
-data class Machine(
-    val name: String,
-    val displayName: String? = null,
-    val cpus: Int = 0,
-    val memoryInBytes: Long = 0,
-    val storageInBytes: Long = 0
-) {
-    /**
-     * Human-readable memory size.
-     */
-    val memoryDisplay: String
-        get() = "${memoryInBytes / BYTES_PER_GB} GB"
-
-    /**
-     * Human-readable storage size.
-     */
-    val storageDisplay: String
-        get() = "${storageInBytes / BYTES_PER_GB} GB"
-
-    /**
-     * Short description like "4 cores, 16 GB RAM".
-     */
-    val shortDescription: String
-        get() = "$cpus cores, $memoryDisplay RAM"
-
-    companion object {
-        private const val BYTES_PER_GB = 1024L * 1024L * 1024L
-    }
-}

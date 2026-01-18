@@ -75,7 +75,7 @@ class GhCli(
         return try {
             val result = execute(
                 "codespace", "list",
-                "--json", "name,displayName,state,repository,gitStatus,machine,createdAt,lastUsedAt"
+                "--json", "name,displayName,state,repository,gitStatus,machineName,createdAt,lastUsedAt"
             )
             if (result.exitValue == 0) {
                 val codespaces = codespaceListAdapter.fromJson(result.outputString()) ?: emptyList()
@@ -96,7 +96,7 @@ class GhCli(
             val result = execute(
                 "codespace", "view",
                 "-c", name,
-                "--json", "name,displayName,state,repository,gitStatus,machine,createdAt,lastUsedAt"
+                "--json", "name,displayName,state,repository,gitStatus,machineName,createdAt,lastUsedAt"
             )
             if (result.exitValue == 0) {
                 val codespace = codespaceAdapter.fromJson(result.outputString())

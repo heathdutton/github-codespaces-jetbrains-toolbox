@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class CodespacesRemoteProvider(
     private val context: CodespacesContext
-) : RemoteProvider("GitHub Codespaces") {
+) : RemoteProvider("Codespaces") {
 
     private val ghCli = GhCli()
     private val environmentCache = ConcurrentHashMap<String, CodespacesRemoteEnvironment>()
