@@ -21,9 +21,9 @@ dependencies {
     // Toolbox API (compile-only, provided at runtime by Toolbox)
     compileOnly(libs.bundles.toolbox.plugin.api)
 
-    // Kotlin
-    implementation(libs.kotlin.stdlib)
-    implementation(libs.kotlinx.coroutines.core)
+    // Kotlin (provided by Toolbox at runtime)
+    compileOnly(libs.kotlin.stdlib)
+    compileOnly(libs.kotlinx.coroutines.core)
 
     // JSON parsing
     implementation(libs.moshi)
