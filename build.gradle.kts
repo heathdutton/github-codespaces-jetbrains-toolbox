@@ -68,14 +68,13 @@ tasks.register("generatePluginDescriptor") {
             """
             {
                 "id": "$pluginId",
-                "name": "$pluginName",
                 "version": "$version",
+                "apiVersion": "${libs.versions.toolbox.api.get()}",
                 "meta": {
-                    "description": "Connect to GitHub Codespaces from JetBrains Toolbox"
-                },
-                "compatibleVersionRange": {
-                    "from": "2.6.0.0",
-                    "to": "2.99.0.0"
+                    "readableName": "$pluginName",
+                    "description": "Connect to GitHub Codespaces from JetBrains Toolbox",
+                    "vendor": "heathdutton",
+                    "url": "https://github.com/heathdutton/github-codespaces-jetbrains-toolbox"
                 }
             }
             """.trimIndent()
@@ -91,12 +90,12 @@ tasks.register<Zip>("buildPlugin") {
     destinationDirectory.set(layout.buildDirectory.dir("distributions"))
 
     // Everything goes inside a folder named after the plugin ID
-    // Plugin JAR and all dependencies go in lib/
+    // JARs go directly in plugin root (not in lib/)
     from(tasks.named("jar")) {
-        into("$pluginId/lib")
+        into(pluginId)
     }
     from(configurations.runtimeClasspath) {
-        into("$pluginId/lib")
+        into(pluginId)
     }
     // extension.json in plugin root
     from(layout.buildDirectory.dir("pluginDescriptor")) {

@@ -61,7 +61,7 @@ PLUGINS_DIR="$(dirname "$PLUGIN_DIR")"
 mkdir -p "$PLUGINS_DIR"
 cd "$PLUGINS_DIR"
 
-# Clean old installation
+# Clean old installation (both old lib/ structure and new flat structure)
 rm -rf "$PLUGIN_ID"
 
 # Download and extract (zip contains the plugin folder)
