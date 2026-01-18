@@ -1,8 +1,8 @@
-package com.github.codespaces.toolbox.views
+package com.heathdutton.codespaces.toolbox.views
 
-import com.github.codespaces.toolbox.CodespacesContext
-import com.github.codespaces.toolbox.cli.AuthStatus
-import com.github.codespaces.toolbox.cli.GhCli
+import com.heathdutton.codespaces.toolbox.CodespacesContext
+import com.heathdutton.codespaces.toolbox.cli.AuthStatus
+import com.heathdutton.codespaces.toolbox.cli.GhCli
 import com.jetbrains.toolbox.api.localization.LocalizableString
 import com.jetbrains.toolbox.api.ui.components.UiPage
 import kotlinx.coroutines.*

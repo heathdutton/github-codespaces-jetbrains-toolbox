@@ -1,5 +1,6 @@
-package com.github.codespaces.toolbox
+package com.heathdutton.codespaces.toolbox
 
+import com.jetbrains.toolbox.api.core.ServiceLocator
 import com.jetbrains.toolbox.api.core.diagnostics.Logger
 import com.jetbrains.toolbox.api.localization.LocalizableStringFactory
 import com.jetbrains.toolbox.api.remoteDev.states.EnvironmentStateColorPalette
@@ -17,5 +18,6 @@ data class CodespacesContext(
     val envPageManager: EnvironmentUiPageManager,
     val colorPalette: EnvironmentStateColorPalette,
     val i18n: LocalizableStringFactory,
-    val scope: CoroutineScope
+    val scope: CoroutineScope,
+    val serviceLocator: ServiceLocator
 )

@@ -1,8 +1,8 @@
-package com.github.codespaces.toolbox
+package com.heathdutton.codespaces.toolbox
 
-import com.github.codespaces.toolbox.cli.GhCli
-import com.github.codespaces.toolbox.models.Codespace
-import com.github.codespaces.toolbox.models.CodespaceState
+import com.heathdutton.codespaces.toolbox.cli.GhCli
+import com.heathdutton.codespaces.toolbox.models.Codespace
+import com.heathdutton.codespaces.toolbox.models.CodespaceState
 import com.jetbrains.toolbox.api.localization.LocalizableString
 import com.jetbrains.toolbox.api.remoteDev.EnvironmentVisibilityState
 import com.jetbrains.toolbox.api.remoteDev.RemoteProviderEnvironment
@@ -76,9 +76,14 @@ class CodespacesRemoteEnvironment(
         }
 
         val sshHost = ghCli.getSshHostForCodespace(codespace.name).getOrThrow()
-        context.logger.info { "Providing SSH connection to: $sshHost" }
 
-        return CodespacesSshContentsView(sshHost)
+        // GitHub Codespaces clones repos to /workspaces/<repo-name>
+        val repoName = codespace.repository.substringAfterLast('/')
+        val projectPath = "/workspaces/$repoName"
+
+        context.logger.info { "Providing SSH connection to: $sshHost with project path: $projectPath" }
+
+        return CodespacesSshContentsView(sshHost, projectPath)
     }
 
     override fun setVisible(visibilityState: EnvironmentVisibilityState) {
@@ -174,19 +179,23 @@ class CodespacesRemoteEnvironment(
  * SSH contents view for connecting to a codespace.
  */
 private class CodespacesSshContentsView(
-    private val sshHost: String
+    private val sshHost: String,
+    private val projectPath: String
 ) : SshEnvironmentContentsView {
-    override suspend fun getConnectionInfo(): SshConnectionInfo = CodespacesSshConnectionInfo(sshHost)
+    override suspend fun getConnectionInfo(): SshConnectionInfo = CodespacesSshConnectionInfo(sshHost, projectPath)
 }
 
 /**
  * SSH connection info for a codespace.
+ * The projectPath points to /workspaces/<repo-name> to match GitHub Codespaces convention.
  */
 private class CodespacesSshConnectionInfo(
-    override val host: String
+    override val host: String,
+    private val defaultProjectPath: String
 ) : SshConnectionInfo {
     override val port: Int = SSH_PORT
     override val userName: String? = null
+    override val projectPath: String? = defaultProjectPath
 
     companion object {
         private const val SSH_PORT = 22
@@ -201,7 +210,7 @@ class CodespacesAction(
     actionLabel: String,
     private val actionBlock: suspend () -> Unit
 ) : RunnableActionDescription {
-    
+
     override val label: LocalizableString = context.i18n.ptrl(actionLabel)
 
     override fun run() {

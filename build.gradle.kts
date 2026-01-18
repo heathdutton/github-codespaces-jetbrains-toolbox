@@ -6,10 +6,10 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
-group = "com.github.codespaces"
-version = "0.1.0"
+group = "com.heathdutton.codespaces"
+version = "0.1.9"
 
-val pluginId = "com.github.codespaces.toolbox"
+val pluginId = "com.heathdutton.codespaces.toolbox"
 val pluginName = "Codespaces"
 
 repositories {

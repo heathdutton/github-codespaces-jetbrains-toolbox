@@ -1,4 +1,4 @@
-package com.github.codespaces.toolbox.models
+package com.heathdutton.codespaces.toolbox.models
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -81,4 +81,3 @@ data class GitStatus(
     val hasUncommittedChanges: Boolean = false,
     val hasUnpushedChanges: Boolean = false
 )
-

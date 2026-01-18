@@ -2,7 +2,7 @@
 set -e
 
 REPO="heathdutton/github-codespaces-jetbrains-toolbox"
-PLUGIN_ID="com.github.codespaces.toolbox"
+PLUGIN_ID="com.heathdutton.codespaces.toolbox"
 
 # Detect OS and set plugin directory
 case "$(uname -s)" in

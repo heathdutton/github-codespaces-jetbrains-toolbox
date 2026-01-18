@@ -1,4 +1,4 @@
-package com.github.codespaces.toolbox
+package com.heathdutton.codespaces.toolbox
 
 import com.jetbrains.toolbox.api.core.ServiceLocator
 import com.jetbrains.toolbox.api.core.diagnostics.Logger
@@ -24,7 +24,8 @@ class CodespacesToolboxExtension : RemoteDevExtension {
             envPageManager = serviceLocator.getService(EnvironmentUiPageManager::class.java),
             colorPalette = serviceLocator.getService(EnvironmentStateColorPalette::class.java),
             i18n = serviceLocator.getService(LocalizableStringFactory::class.java),
-            scope = serviceLocator.getService(CoroutineScope::class.java)
+            scope = serviceLocator.getService(CoroutineScope::class.java),
+            serviceLocator = serviceLocator
         )
 
         return CodespacesRemoteProvider(context)

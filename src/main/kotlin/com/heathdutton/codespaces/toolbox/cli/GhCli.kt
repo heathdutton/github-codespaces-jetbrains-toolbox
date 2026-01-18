@@ -1,6 +1,6 @@
-package com.github.codespaces.toolbox.cli
+package com.heathdutton.codespaces.toolbox.cli
 
-import com.github.codespaces.toolbox.models.Codespace
+import com.heathdutton.codespaces.toolbox.models.Codespace
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory

@@ -45,9 +45,9 @@ Then restart JetBrains Toolbox.
 
    | OS | Path |
    |----|------|
-   | macOS | `~/Library/Caches/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/` |
-   | Linux | `~/.local/share/JetBrains/Toolbox/plugins/com.github.codespaces.toolbox/` |
-   | Windows | `%LocalAppData%\JetBrains\Toolbox\plugins\com.github.codespaces.toolbox\` |
+   | macOS | `~/Library/Caches/JetBrains/Toolbox/plugins/com.heathdutton.codespaces.toolbox/` |
+   | Linux | `~/.local/share/JetBrains/Toolbox/plugins/com.heathdutton.codespaces.toolbox/` |
+   | Windows | `%LocalAppData%\JetBrains\Toolbox\plugins\com.heathdutton.codespaces.toolbox\` |
 
 3. Restart JetBrains Toolbox
 

@@ -1,7 +1,7 @@
-package com.github.codespaces.toolbox
+package com.heathdutton.codespaces.toolbox
 
-import com.github.codespaces.toolbox.cli.AuthStatus
-import com.github.codespaces.toolbox.cli.GhCli
+import com.heathdutton.codespaces.toolbox.cli.AuthStatus
+import com.heathdutton.codespaces.toolbox.cli.GhCli
 import com.jetbrains.toolbox.api.core.ui.icons.SvgIcon
 import com.jetbrains.toolbox.api.core.util.LoadableState
 import com.jetbrains.toolbox.api.localization.LocalizableString
@@ -43,7 +43,7 @@ class CodespacesRemoteProvider(
 
     override val noEnvironmentsDescription: String? = "No codespaces found. Create one on github.com"
 
-    override val loadingEnvironmentsDescription: LocalizableString = 
+    override val loadingEnvironmentsDescription: LocalizableString =
         context.i18n.ptrl("Loading codespaces...")
 
     override val canCreateNewEnvironments: Boolean = false
