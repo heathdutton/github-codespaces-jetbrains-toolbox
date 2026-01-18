@@ -15,8 +15,33 @@ import java.util.concurrent.TimeUnit
  * Wrapper around the GitHub CLI (gh) for codespace operations.
  */
 class GhCli(
-    private val ghPath: String = "gh"
+    private val ghPath: String = findGhPath()
 ) {
+    companion object {
+        private const val COMMAND_TIMEOUT_SECONDS = 60L
+
+        /**
+         * Find the gh CLI in common locations.
+         * GUI apps on macOS don't inherit shell PATH, so we check common install locations.
+         */
+        private fun findGhPath(): String {
+            val commonPaths = listOf(
+                "/opt/homebrew/bin/gh",      // macOS ARM Homebrew
+                "/usr/local/bin/gh",          // macOS Intel Homebrew / Linux
+                "/usr/bin/gh",                // Linux package manager
+                "/home/linuxbrew/.linuxbrew/bin/gh", // Linux Homebrew
+                System.getenv("LOCALAPPDATA")?.let { "$it\\GitHub CLI\\gh.exe" }, // Windows
+                "gh" // Fallback to PATH
+            )
+
+            for (path in commonPaths) {
+                if (path != null && java.io.File(path).canExecute()) {
+                    return path
+                }
+            }
+            return "gh" // Fallback
+        }
+    }
     private val moshi = Moshi.Builder()
         .addLast(KotlinJsonAdapterFactory())
         .build()
@@ -155,10 +180,6 @@ class GhCli(
             .readOutput(true)
             .timeout(COMMAND_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .execute()
-    }
-
-    companion object {
-        private const val COMMAND_TIMEOUT_SECONDS = 60L
     }
 }
 
