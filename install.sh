@@ -7,7 +7,7 @@ PLUGIN_ID="com.github.codespaces.toolbox"
 # Detect OS and set plugin directory
 case "$(uname -s)" in
     Darwin)
-        PLUGIN_DIR="$HOME/Library/Application Support/JetBrains/Toolbox/plugins/$PLUGIN_ID"
+        PLUGIN_DIR="$HOME/Library/Caches/JetBrains/Toolbox/plugins/$PLUGIN_ID"
         ;;
     Linux)
         PLUGIN_DIR="$HOME/.local/share/JetBrains/Toolbox/plugins/$PLUGIN_ID"

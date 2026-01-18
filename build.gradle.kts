@@ -111,7 +111,7 @@ tasks.register<Copy>("installPlugin") {
     val userHome = System.getProperty("user.home")
     val os = System.getProperty("os.name").lowercase()
     val pluginDir = when {
-        os.contains("mac") -> "$userHome/Library/Application Support/JetBrains/Toolbox/plugins/$pluginId"
+        os.contains("mac") -> "$userHome/Library/Caches/JetBrains/Toolbox/plugins/$pluginId"
         os.contains("linux") -> "$userHome/.local/share/JetBrains/Toolbox/plugins/$pluginId"
         os.contains("windows") -> "${System.getenv("LOCALAPPDATA")}/JetBrains/Toolbox/cache/plugins/$pluginId"
         else -> throw GradleException("Unsupported OS: $os")
