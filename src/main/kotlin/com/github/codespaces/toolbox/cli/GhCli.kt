@@ -158,6 +158,45 @@ class GhCli(
     }
 
     /**
+     * Write SSH config for codespaces to ~/.ssh/config.
+     * This enables the SSH hostname resolution via gh CLI ProxyCommand.
+     */
+    fun writeSshConfig(): Result<Unit> {
+        return getSshConfig().map { config ->
+            val sshDir = java.io.File(System.getProperty("user.home"), ".ssh")
+            sshDir.mkdirs()
+
+            val configFile = java.io.File(sshDir, "config")
+            val existingConfig = if (configFile.exists()) configFile.readText() else ""
+
+            // Marker comments to identify our managed section
+            val startMarker = "# --- GitHub Codespaces (managed by JetBrains Toolbox plugin) ---"
+            val endMarker = "# --- End GitHub Codespaces ---"
+
+            // Remove existing codespaces section if present
+            val cleanedConfig = existingConfig
+                .replace(Regex("$startMarker.*?$endMarker\\s*", RegexOption.DOT_MATCHES_ALL), "")
+                .trimEnd()
+
+            // Write new config with codespaces section
+            val newConfig = buildString {
+                if (cleanedConfig.isNotEmpty()) {
+                    append(cleanedConfig)
+                    append("\n\n")
+                }
+                append(startMarker)
+                append("\n")
+                append(config.trim())
+                append("\n")
+                append(endMarker)
+                append("\n")
+            }
+
+            configFile.writeText(newConfig)
+        }
+    }
+
+    /**
      * Get the SSH host name for a specific codespace.
      * This parses the SSH config to find the matching host entry.
      */

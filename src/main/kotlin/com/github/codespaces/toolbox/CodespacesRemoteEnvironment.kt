@@ -70,6 +70,11 @@ class CodespacesRemoteEnvironment(
             waitForReady()
         }
 
+        // Ensure SSH config is written for this codespace
+        ghCli.writeSshConfig().onFailure { error ->
+            context.logger.error(error) { "Failed to write SSH config" }
+        }
+
         val sshHost = ghCli.getSshHostForCodespace(codespace.name).getOrThrow()
         context.logger.info { "Providing SSH connection to: $sshHost" }
 
