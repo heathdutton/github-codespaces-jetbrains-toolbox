@@ -109,11 +109,14 @@ class GhCli(
     }
 
     /**
-     * Start a codespace.
+     * Start a codespace by initiating an SSH connection.
+     * Note: gh CLI doesn't have an explicit start command - codespaces auto-start on SSH.
      */
     fun startCodespace(name: String): Result<Unit> {
         return try {
-            val result = execute("codespace", "start", "--codespace", name)
+            // Use ssh with a simple command to trigger the codespace to start
+            // The --codespace flag works for ssh
+            val result = execute("codespace", "ssh", "-c", name, "--", "true")
             if (result.exitValue == 0) {
                 Result.success(Unit)
             } else {
@@ -129,7 +132,7 @@ class GhCli(
      */
     fun stopCodespace(name: String): Result<Unit> {
         return try {
-            val result = execute("codespace", "stop", "--codespace", name)
+            val result = execute("codespace", "stop", "-c", name)
             if (result.exitValue == 0) {
                 Result.success(Unit)
             } else {
