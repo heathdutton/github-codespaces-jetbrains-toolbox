@@ -43,6 +43,13 @@ dependencies {
     testImplementation(libs.bundles.toolbox.plugin.api)
 }
 
+// Exclude Kotlin stdlib from all runtime dependencies (Toolbox provides it)
+configurations.runtimeClasspath {
+    exclude(group = "org.jetbrains.kotlin")
+    exclude(group = "org.jetbrains.kotlinx")
+    exclude(group = "org.jetbrains", module = "annotations")
+}
+
 kotlin {
     jvmToolchain(21)
     compilerOptions {
