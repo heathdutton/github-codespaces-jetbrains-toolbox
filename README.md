@@ -21,9 +21,13 @@
 ### Prerequisites
 
 1. [JetBrains Toolbox](https://www.jetbrains.com/toolbox-app/) 2.6.0+
-2. [GitHub CLI](https://cli.github.com/) installed and authenticated:
+2. [GitHub CLI](https://cli.github.com/) installed and authenticated with codespace scope:
    ```bash
-   gh auth login
+   gh auth login -s codespace
+   ```
+   Or if already logged in:
+   ```bash
+   gh auth refresh -h github.com -s codespace
    ```
 
 ### Quick Install

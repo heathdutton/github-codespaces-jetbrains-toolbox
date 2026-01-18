@@ -42,7 +42,13 @@ fi
 if ! gh auth status &> /dev/null; then
     echo "GitHub CLI is not authenticated."
     echo ""
-    gh auth login
+    gh auth login -s codespace
+fi
+
+# Ensure codespace scope is granted
+if ! gh auth status 2>&1 | grep -q "codespace"; then
+    echo "Adding codespace scope to GitHub CLI..."
+    gh auth refresh -h github.com -s codespace
 fi
 
 echo ""
