@@ -76,14 +76,9 @@ class CodespacesRemoteEnvironment(
         }
 
         val sshHost = ghCli.getSshHostForCodespace(codespace.name).getOrThrow()
+        context.logger.info { "Providing SSH connection to: $sshHost" }
 
-        // GitHub Codespaces clones repos to /workspaces/<repo-name>
-        val repoName = codespace.repository.substringAfterLast('/')
-        val projectPath = "/workspaces/$repoName"
-
-        context.logger.info { "Providing SSH connection to: $sshHost with project path: $projectPath" }
-
-        return CodespacesSshContentsView(sshHost, projectPath)
+        return CodespacesSshContentsView(sshHost)
     }
 
     override fun setVisible(visibilityState: EnvironmentVisibilityState) {
@@ -179,23 +174,21 @@ class CodespacesRemoteEnvironment(
  * SSH contents view for connecting to a codespace.
  */
 private class CodespacesSshContentsView(
-    private val sshHost: String,
-    private val projectPath: String
+    private val sshHost: String
 ) : SshEnvironmentContentsView {
-    override suspend fun getConnectionInfo(): SshConnectionInfo = CodespacesSshConnectionInfo(sshHost, projectPath)
+    override suspend fun getConnectionInfo(): SshConnectionInfo = CodespacesSshConnectionInfo(sshHost)
 }
 
 /**
  * SSH connection info for a codespace.
- * The projectPath points to /workspaces/<repo-name> to match GitHub Codespaces convention.
+ * Note: The Toolbox API doesn't support setting a default project path via SshConnectionInfo.
+ * Users will need to navigate to /workspaces/<repo-name> manually.
  */
 private class CodespacesSshConnectionInfo(
-    override val host: String,
-    private val defaultProjectPath: String
+    override val host: String
 ) : SshConnectionInfo {
     override val port: Int = SSH_PORT
     override val userName: String? = null
-    override val projectPath: String? = defaultProjectPath
 
     companion object {
         private const val SSH_PORT = 22
