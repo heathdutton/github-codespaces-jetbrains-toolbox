@@ -110,8 +110,8 @@ class CodespacesRemoteEnvironment(
             parts.add("on $ref")
         }
 
-        codespace.machine?.let { machine ->
-            parts.add(machine.shortDescription)
+        codespace.machineName?.let { machineName ->
+            parts.add(machineName)
         }
 
         return parts.joinToString(" | ")
