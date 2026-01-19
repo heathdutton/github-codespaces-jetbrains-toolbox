@@ -14,6 +14,10 @@
   <em>Community-maintained plugin after GitHub discontinued their official integration (January 2025)</em>
 </p>
 
+<p align="center">
+  <img src="screenshot.png" width="400" alt="GitHub Codespaces in JetBrains Toolbox">
+</p>
+
 > **Note:** This plugin has only been tested on macOS. Linux and Windows support is experimental.
 
 ---
