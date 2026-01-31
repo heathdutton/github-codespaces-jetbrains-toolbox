@@ -6,7 +6,7 @@ moshi = "1.15.1"
 toolbox-api = "1.3.47293"
 plugin-structure = "3.320"
 detekt = "1.23.8"
-mockk = "1.14.7"
+mockk = "1.14.9"
 zt-exec = "1.12"
 
 [libraries]
